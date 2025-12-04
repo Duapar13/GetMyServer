@@ -831,8 +831,8 @@ ipcMain.handle('import-workspace', async (event) => {
 });
 
 // Configuration de l'auto-updater
-autoUpdater.setAutoDownload(false);
-autoUpdater.setAutoInstallOnAppQuit(true);
+autoUpdater.autoDownload = false; // Ne pas télécharger automatiquement, demander à l'utilisateur
+autoUpdater.autoInstallOnAppQuit = true; // Installer automatiquement au redémarrage
 
 // Gérer les événements de mise à jour
 autoUpdater.on('checking-for-update', () => {

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GetMyServer - Test Routes HTTP</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 GetMyServer</h1>
+        </header>
+
+        <div class="main-content">
+            <div class="request-panel">
+                <h2>Requête HTTP</h2>
+                
+                <div class="form-group">
+                    <label for="method">Méthode:</label>
+                    <select id="method">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="url">URL:</label>
+                    <input type="text" id="url" value="/api/items" placeholder="URL complète (https://...) ou chemin (/api/items)">
+                </div>
+
+                <div class="form-group">
+                    <label for="bearer-token">Bearer Token (optionnel):</label>
+                    <input type="text" id="bearer-token" placeholder="Votre token d'authentification">
+                </div>
+
+                <div class="form-group">
+                    <label for="basic-auth">Basic Auth (optionnel):</label>
+                    <input type="text" id="basic-auth" placeholder="ZGVmYXVsdGh0dHBrZXk6 ou username:password">
+                    <small style="color: #666; font-size: 0.85em; display: block; margin-top: 5px;">Format: base64 ou username:password</small>
+                </div>
+
+                <div class="form-group" id="body-group" style="display: none;">
+                    <label for="body">Body (JSON):</label>
+                    <textarea id="body" placeholder='{"name": "Exemple", "description": "..."}'></textarea>
+                </div>
+
+                <div class="form-group">
+                    <button id="send-btn" class="btn-primary">Envoyer la requête</button>
+                    <button id="clear-btn" class="btn-secondary">Effacer</button>
+                    <button id="save-btn" class="btn-save">💾 Sauvegarder</button>
+                </div>
+            </div>
+
+            <div class="response-panel">
+                <div class="response-header">
+                    <h2>Réponse</h2>
+                    <div class="response-actions">
+                        <button id="copy-response-btn" class="btn-small btn-copy" title="Copier la réponse">📋</button>
+                        <button id="toggle-expand-btn" class="btn-small btn-expand" title="Agrandir/Réduire">⛶</button>
+                    </div>
+                </div>
+                <div id="response-status" class="status-badge"></div>
+                <div class="response-container">
+                    <pre id="response-content"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="saved-routes-panel">
+            <div class="panel-header">
+                <h2>Routes sauvegardées</h2>
+                <div class="header-actions">
+                    <input type="text" id="folder-name-input" placeholder="Nom du dossier" class="folder-input">
+                    <button id="create-folder-btn" class="btn-secondary">📁 Créer dossier</button>
+                    <button id="export-workspace-btn" class="btn-secondary" title="Exporter le workspace">💾 Exporter</button>
+                    <button id="import-workspace-btn" class="btn-secondary" title="Importer un workspace">📥 Importer</button>
+                    <button id="check-updates-btn" class="btn-secondary" title="Vérifier les mises à jour">🔄 Mise à jour</button>
+                    <button id="refresh-routes-btn" class="btn-secondary">🔄 Actualiser</button>
+                </div>
+            </div>
+            <div id="folders-list" class="folders-list"></div>
+        </div>
+    </div>
+
+    <!-- Modal pour sauvegarder une route -->
+    <div id="save-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">💾 Sauvegarder la route</h2>
+                <span class="modal-close" id="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="route-name-input">Nom de la route:</label>
+                    <input type="text" id="route-name-input" placeholder="Ex: Get Leaderboard" class="modal-input">
+                </div>
+                <div class="form-group">
+                    <label for="route-folder-select">Dossier:</label>
+                    <div class="folder-select-container">
+                        <select id="route-folder-select" class="modal-input">
+                            <option value="root">📁 Racine</option>
+                        </select>
+                        <input type="text" id="new-folder-input" placeholder="Nouveau dossier" class="modal-input" style="display: none; margin-top: 10px;">
+                        <button id="toggle-new-folder-btn" class="btn-secondary" style="margin-top: 10px;">+ Créer un nouveau dossier</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-save-btn" class="btn-secondary">Annuler</button>
+                <button id="confirm-save-btn" class="btn-primary">Sauvegarder</button>
+            </div>
+            <input type="hidden" id="edit-route-id" value="">
+            <input type="hidden" id="edit-route-folder" value="">
+        </div>
+    </div>
+
+
+    <!-- Modal pour Swagger Documentation -->
+    <div id="swagger-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>📖 Documentation Swagger</h2>
+                <span class="modal-close" id="close-swagger-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Format d'export:</label>
+                    <select id="swagger-format" class="modal-input">
+                        <option value="json">JSON</option>
+                        <option value="yaml">YAML</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Documentation Swagger/OpenAPI:</label>
+                    <pre id="swagger-content" style="background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 8px; padding: 15px; min-height: 300px; max-height: 500px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.9em; white-space: pre-wrap; word-wrap: break-word;"></pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="copy-swagger-btn" class="btn-secondary">📋 Copier</button>
+                <button id="download-swagger-btn" class="btn-primary">💾 Télécharger</button>
+                <button id="close-swagger-btn" class="btn-secondary">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour les mises à jour -->
+    <div id="update-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔄 Mise à jour</h2>
+                <span class="modal-close" id="close-update-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="update-status" style="padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                    <p id="update-message">Vérification des mises à jour...</p>
+                </div>
+                <div id="update-progress" style="display: none;">
+                    <div style="background: #f0f0f0; border-radius: 5px; height: 20px; overflow: hidden; margin-bottom: 10px;">
+                        <div id="update-progress-bar" style="background: #667eea; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                    </div>
+                    <p id="update-progress-text" style="text-align: center; color: #666; font-size: 0.9em;">0%</p>
+                </div>
+                <div id="update-actions" style="display: none;">
+                    <button id="download-update-btn" class="btn-primary" style="width: 100%; margin-bottom: 10px;">Télécharger la mise à jour</button>
+                    <button id="install-update-btn" class="btn-primary" style="width: 100%; display: none;">Installer et redémarrer</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-update-btn" class="btn-secondary">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+

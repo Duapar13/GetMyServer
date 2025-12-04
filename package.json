@@ -1,6 +1,6 @@
 {
   "name": "getmyserver",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Application Electron pour tester des routes HTTP",
   "main": "main.js",
   "scripts": {

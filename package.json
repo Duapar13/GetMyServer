@@ -1,6 +1,6 @@
 {
   "name": "getmyserver",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Application Electron pour tester des routes HTTP",
   "main": "main.js",
   "scripts": {
@@ -23,6 +23,11 @@
   "build": {
     "appId": "com.getmyserver.app",
     "productName": "GetMyServer",
+    "publish": {
+      "provider": "github",
+      "owner": "Duapar13",
+      "repo": "GetMyServer"
+    },
     "mac": {
       "category": "public.app-category.developer-tools",
       "target": [
@@ -53,14 +58,7 @@
     ],
     "directories": {
       "output": "dist"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "Duapar13",
-        "repo": "GetMyServer"
-      }
-    ]
+    }
   },
   "devDependencies": {
     "electron": "^27.0.0",
